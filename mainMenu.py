@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtGui import QImage, QPixmap
 import cv2
 
 
@@ -51,6 +52,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.btnLive)
         self.btnOpen = QtWidgets.QPushButton(self.centralwidget)
         self.btnOpen.setObjectName("btnOpen")
+        self.btnOpen.clicked.connect(self.loadImage)
         self.horizontalLayout_2.addWidget(self.btnOpen)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.horizontalLayout.addLayout(self.verticalLayout)
@@ -92,6 +94,20 @@ class Ui_MainWindow(object):
     def loadImage(self):
         self.filename = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
         self.image = cv2.imread(self.filename)
+        self.tampilGambar(self.image)
+
+    def tampilGambar(self, gambar):
+        #image = cv2.resize(image, (640, 480))
+        qformat = QImage.Format_Indexed8
+        if len(gambar.shape) == 3:
+            if gambar.shape[2] == 4:
+                qformat = QImage.Format_RGBA8888
+            else:
+                qformat = QImage.Format_RGB888
+        outImage = QImage(gambar, gambar.shape[1], gambar.shape[0], gambar.strides[0], qformat)
+        outImage = outImage.rgbSwapped()
+        self.labelScreen.setPixmap(QPixmap.fromImage(outImage))
+        self.labelScreen.setScaledContents(True)
 
 
 if __name__ == "__main__":
