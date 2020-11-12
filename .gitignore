@@ -147,5 +147,5 @@ cython_debug/
 .vscode
 # Thumbnails
 ._*
-
+*.h5
 database.ini

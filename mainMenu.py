@@ -97,7 +97,7 @@ class Ui_MainWindow(object):
         self.tampilGambar(self.image)
 
     def tampilGambar(self, gambar):
-        #image = cv2.resize(image, (640, 480))
+        gambar = cv2.resize(gambar, (400, 400))
         qformat = QImage.Format_Indexed8
         if len(gambar.shape) == 3:
             if gambar.shape[2] == 4:
@@ -108,6 +108,9 @@ class Ui_MainWindow(object):
         outImage = outImage.rgbSwapped()
         self.labelScreen.setPixmap(QPixmap.fromImage(outImage))
         self.labelScreen.setScaledContents(True)
+
+    def prediksi(self):
+        
 
 
 if __name__ == "__main__":
