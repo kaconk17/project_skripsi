@@ -12,6 +12,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QImage, QPixmap
 import cv2
+import sys
+import numpy as np
+from tensorflow.keras.models import load_model
+from keras.preprocessing import image
 
 
 class Ui_MainWindow(object):
@@ -74,7 +78,7 @@ class Ui_MainWindow(object):
         self.menuMenu.addAction(self.actionOpen_File)
         self.menuMenu.addAction(self.actionClose)
         self.menubar.addAction(self.menuMenu.menuAction())
-
+        self.model = load_model('models/material.h5')
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -96,8 +100,9 @@ class Ui_MainWindow(object):
         self.image = cv2.imread(self.filename)
         self.tampilGambar(self.image)
 
-    def tampilGambar(self, gambar):
-        gambar = cv2.resize(gambar, (400, 400))
+    def tampilGambar(self, original):
+        thasil = self.prediksi(original)
+        gambar = cv2.resize(original, (400, 400))
         qformat = QImage.Format_Indexed8
         if len(gambar.shape) == 3:
             if gambar.shape[2] == 4:
@@ -108,13 +113,26 @@ class Ui_MainWindow(object):
         outImage = outImage.rgbSwapped()
         self.labelScreen.setPixmap(QPixmap.fromImage(outImage))
         self.labelScreen.setScaledContents(True)
+        self.labelMaterial.setText(thasil)
 
-    def prediksi(self):
-        
+    def prediksi(self,gambar):
+        img = cv2.resize(gambar, (400,400))
+        grayImage = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        (thresh, bw) = cv2.threshold(grayImage, 160, 255, cv2.THRESH_BINARY)
+        bw = cv2.cvtColor(bw, cv2.COLOR_BGR2RGB)
+        x = image.img_to_array(bw)
+        x = np.expand_dims(x, axis=0)
+        images = np.vstack([x])
+        labels = ['Type A', 'Type B']
+        classes = self.model.predict(images, batch_size=10)
+        pred = int(np.argmax(classes, axis=1))
+        hasil = labels[pred]
+        print(hasil)
+        return hasil
+
 
 
 if __name__ == "__main__":
-    import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
