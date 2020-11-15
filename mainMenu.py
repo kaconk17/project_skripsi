@@ -24,92 +24,24 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
         loadUi("gui/mainMenu.ui", self)
-        #MainWindow.setObjectName("MainWindow")
-        #MainWindow.resize(864, 600)
         self.filename = None
         self.image = None
         self.liveStat = False
-
+        self.timer = QtCore.QTimer(self)
+        self.timer.setInterval(1000)
+        self.timer.start()
+        self.timer.timeout.connect(self.showDatetime)
         self.labelScreen.setStyleSheet("background-color: black")
         self.btnLive.clicked.connect(self.goLive)
         self.btnOpen.clicked.connect(self.loadImage)
+        self.actionOpen_File.triggered.connect(self.loadImage)
+        self.actionClose.triggered.connect(sys.exit)
         self.model = load_model('models/material.h5')
         self.checkPredict.stateChanged.connect(self.checkstate)
         self.btnPredict.clicked.connect(self.singleImage)
         self.checkPredict.setEnabled(False)
         self.btnPredict.setEnabled(False)
 
-        """
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.labelScreen = QtWidgets.QLabel(self.centralwidget)
-        self.labelScreen.setMinimumSize(QtCore.QSize(600, 0))
-        self.labelScreen.setObjectName("labelScreen")
-        self.horizontalLayout.addWidget(self.labelScreen)
-        self.verticalLayout = QtWidgets.QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.labelTgl = QtWidgets.QLabel(self.centralwidget)
-        self.labelTgl.setStyleSheet("font: 24pt \".SF NS Text\";")
-        self.labelTgl.setAlignment(QtCore.Qt.AlignCenter)
-        self.labelTgl.setObjectName("labelTgl")
-        self.verticalLayout.addWidget(self.labelTgl)
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignHCenter)
-        self.label_3.setObjectName("label_3")
-        self.verticalLayout.addWidget(self.label_3)
-        self.labelMaterial = QtWidgets.QLabel(self.centralwidget)
-        self.labelMaterial.setStyleSheet("font: 40pt \".SF NS Text\";")
-        self.labelMaterial.setAlignment(QtCore.Qt.AlignCenter)
-        self.labelMaterial.setObjectName("labelMaterial")
-        self.verticalLayout.addWidget(self.labelMaterial)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.btnLive = QtWidgets.QPushButton(self.centralwidget)
-        self.btnLive.setObjectName("btnLive")
-        self.horizontalLayout_2.addWidget(self.btnLive)
-        self.btnOpen = QtWidgets.QPushButton(self.centralwidget)
-        self.btnOpen.setObjectName("btnOpen")
-        self.horizontalLayout_2.addWidget(self.btnOpen)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.horizontalLayout.addLayout(self.verticalLayout)
-        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 864, 22))
-        self.menubar.setObjectName("menubar")
-        self.menuMenu = QtWidgets.QMenu(self.menubar)
-        self.menuMenu.setObjectName("menuMenu")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-        self.actionOpen_File = QtWidgets.QAction(MainWindow)
-        self.actionOpen_File.setObjectName("actionOpen_File")
-        self.actionClose = QtWidgets.QAction(MainWindow)
-        self.actionClose.setObjectName("actionClose")
-        self.menuMenu.addAction(self.actionOpen_File)
-        self.menuMenu.addAction(self.actionClose)
-        self.menubar.addAction(self.menuMenu.menuAction())
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        """
-
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.labelScreen.setText(_translate("MainWindow", "TextLabel"))
-        self.labelTgl.setText(_translate("MainWindow", "Tanggal"))
-        self.label_3.setText(_translate("MainWindow", "Jenis Material :"))
-        self.labelMaterial.setText(_translate("MainWindow", "TextLabel"))
-        self.btnLive.setText(_translate("MainWindow", "LIVE"))
-        self.btnOpen.setText(_translate("MainWindow", "OPEN"))
-        self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
-        self.actionOpen_File.setText(_translate("MainWindow", "Open File"))
-        self.actionClose.setText(_translate("MainWindow", "Close"))
 
     def goLive(self):
         if self.liveStat:
@@ -121,18 +53,21 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         if self.liveStat:
             self.vtimer.stop()
             self.capture.release()
-            #self.labelScreen.setStyleSheet("background-color: black")
             self.labelScreen.clear()
             self.liveStat = False
             self.btnLive.setText("LIVE")
             self.checkPredict.setEnabled(False)
             self.btnPredict.setEnabled(False)
+            self.btnOpen.setEnabled(True)
+            self.actionOpen_File.setEnabled(True)
 
     def liveCam(self):
         self.liveStat = True
         self.btnLive.setText("STOP LIVE")
         self.checkPredict.setEnabled(True)
         self.btnPredict.setEnabled(True)
+        self.btnOpen.setEnabled(False)
+        self.actionOpen_File.setEnabled(False)
         cameraName = "0"
         if len(cameraName) == 1:
         	self.capture = cv2.VideoCapture(int(cameraName))
@@ -151,8 +86,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     def loadImage(self):
         self.filename = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
-        self.image = cv2.imread(self.filename)
-        self.tampilGambar(self.image, True)
+        if len(self.filename) > 3:
+            self.image = cv2.imread(self.filename)
+            self.tampilGambar(self.image, True)
+            
 
     def tampilGambar(self, original, pred):
         gambar = cv2.resize(original, (400, 400))
@@ -188,7 +125,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         return hasil
 
     def singleImage(self):
-        #self.vtimer.stop()
         self.stopLive()
         self.tampilGambar(self.image, True)
 
@@ -199,13 +135,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         else:
             self.btnPredict.setEnabled(True)
 
+    def showDatetime(self):
+        self.labelTgl.setText(QDateTime.currentDateTime().toString('dd/MM/yyyy'))
+
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    #MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
-    #ui.setupUi(MainWindow)
-    #MainWindow.show()
     ui.show()
     sys.exit(app.exec_())
