@@ -36,7 +36,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.btnOpen.clicked.connect(self.loadImage)
         self.actionOpen_File.triggered.connect(self.loadImage)
         self.actionClose.triggered.connect(sys.exit)
-        self.model = load_model('models/material.h5')
+        self.model = load_model('models/material2.h5')
         self.checkPredict.stateChanged.connect(self.checkstate)
         self.btnPredict.clicked.connect(self.singleImage)
         self.checkPredict.setEnabled(False)
@@ -79,10 +79,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     def updateFrame(self):
         ret, self.image = self.capture.read()
-        if self.checkPredict.isChecked() == True:
-            self.tampilGambar(self.image, True)
+        if ret:
+            if self.checkPredict.isChecked() == True:
+                self.tampilGambar(self.image, True)
+            else:
+                self.tampilGambar(self.image, False)
         else:
-            self.tampilGambar(self.image, False)
+            print("Camera not ready")
+            
 
     def loadImage(self):
         self.filename = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
@@ -119,6 +123,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         images = np.vstack([x])
         labels = ['Type A', 'Type B']
         classes = self.model.predict(images, batch_size=10)
+        print(classes)
         pred = int(np.argmax(classes, axis=1))
         hasil = labels[pred]
         print(hasil)
