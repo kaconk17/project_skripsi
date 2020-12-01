@@ -13,6 +13,8 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer, QDateTime
 from PyQt5.uic import loadUi
+from menuSetting import MenuSetting
+from config import config
 import cv2
 import sys
 import numpy as np
@@ -36,11 +38,22 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.btnOpen.clicked.connect(self.loadImage)
         self.actionOpen_File.triggered.connect(self.loadImage)
         self.actionClose.triggered.connect(sys.exit)
-        self.model = load_model('models/material2.h5')
+        self.actionLoad_Model.triggered.connect(self.openSetting)
+        self.model = None
         self.checkPredict.stateChanged.connect(self.checkstate)
         self.btnPredict.clicked.connect(self.singleImage)
         self.checkPredict.setEnabled(False)
         self.btnPredict.setEnabled(False)
+        self.pathmodel = config()
+       
+        print(len(self.pathmodel['path']))
+       
+
+    def getModel(self):
+        if len(self.pathmodel['path']) < 1:
+            self.openSetting()
+        else:
+            self.model = load_model(self.pathmodel['path'])
 
 
     def goLive(self):
@@ -62,6 +75,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.actionOpen_File.setEnabled(True)
 
     def liveCam(self):
+        self.getModel()
         self.liveStat = True
         self.btnLive.setText("STOP LIVE")
         self.checkPredict.setEnabled(True)
@@ -89,6 +103,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             
 
     def loadImage(self):
+        self.getModel()
         self.filename = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
         if len(self.filename) > 3:
             self.image = cv2.imread(self.filename)
@@ -142,6 +157,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     def showDatetime(self):
         self.labelTgl.setText(QDateTime.currentDateTime().toString('dd/MM/yyyy'))
+    
+    def openSetting(self):
+        self._new_window = MenuSetting(self)
+        self._new_window.show()
+    
 
 
 

@@ -124,6 +124,7 @@
      <string>Menu</string>
     </property>
     <addaction name="actionOpen_File"/>
+    <addaction name="actionLoad_Model"/>
     <addaction name="actionClose"/>
    </widget>
    <addaction name="menuMenu"/>
@@ -137,6 +138,11 @@
   <action name="actionClose">
    <property name="text">
     <string>Close</string>
+   </property>
+  </action>
+  <action name="actionLoad_Model">
+   <property name="text">
+    <string>Load Model</string>
    </property>
   </action>
  </widget>
