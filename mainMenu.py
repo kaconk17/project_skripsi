@@ -45,7 +45,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.checkPredict.setEnabled(False)
         self.btnPredict.setEnabled(False)
         self.pathmodel = config()
-       
         print(len(self.pathmodel['path']))
        
 
@@ -60,7 +59,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         if self.liveStat:
             self.stopLive()
         else:
-            self.liveCam()
+            self.pathmodel = config()
+            if len(self.pathmodel['path']) < 1:
+                self.openSetting()
+            else:
+                self.model = load_model(self.pathmodel['path'])
+                self.liveCam()
 
     def stopLive(self):
         if self.liveStat:
@@ -75,7 +79,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.actionOpen_File.setEnabled(True)
 
     def liveCam(self):
-        self.getModel()
+        #self.getModel()
         self.liveStat = True
         self.btnLive.setText("STOP LIVE")
         self.checkPredict.setEnabled(True)
@@ -103,11 +107,15 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             
 
     def loadImage(self):
-        self.getModel()
-        self.filename = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
-        if len(self.filename) > 3:
-            self.image = cv2.imread(self.filename)
-            self.tampilGambar(self.image, True)
+        self.pathmodel = config()
+        if len(self.pathmodel['path']) < 1:
+            self.openSetting()
+        else:
+            self.model = load_model(self.pathmodel['path'])
+            self.filename = QFileDialog.getOpenFileName(filter="Image (*.*)")[0]
+            if len(self.filename) > 3:
+                self.image = cv2.imread(self.filename)
+                self.tampilGambar(self.image, True)
             
 
     def tampilGambar(self, original, pred):
@@ -162,7 +170,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self._new_window = MenuSetting(self)
         self._new_window.show()
     
-
+    def loadSetting(self):
+        self._set_window = MenuSetting(self)
+        self._set_window.show()
 
 
 if __name__ == "__main__":

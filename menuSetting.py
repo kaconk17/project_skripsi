@@ -14,6 +14,7 @@ class MenuSetting(QDialog):
         self.btn_cancel.clicked.connect(self.close)
         self.btnchange.clicked.connect(self.loadFile)
         self.btn_save.clicked.connect(self.saveConf)
+        self.readConf()
     def readConf(self):
         self.path = config()
         self.txtpath.setText(self.path['path'])
@@ -23,6 +24,7 @@ class MenuSetting(QDialog):
             self.lok = self.txtpath.text()
             confcreate(self.lok)
             print('simpan berhasil')
+            self.close()
 
     def loadFile(self):
         self.filename = QFileDialog.getOpenFileName()[0]
