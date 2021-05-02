@@ -146,10 +146,12 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         images = np.vstack([x])
         labels = ['Type A', 'Type B']
         classes = self.model.predict(images, batch_size=10)
+        #prob = self.model.predict_proba(images, batch_size=10)
         print(classes)
         pred = int(np.argmax(classes, axis=1))
         hasil = labels[pred]
         print(hasil)
+        #print(prob)
         return hasil
 
     def singleImage(self):
